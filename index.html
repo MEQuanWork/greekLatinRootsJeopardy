@@ -2,48 +2,56 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Greek and Latin Root Jeopardy 2026</title>
+    <title>Jeopardy: Greek & Latin Roots (2026)</title>
     <style>
-        /* BASE THEME */
-        body { background-color: #000; color: #fff; font-family: 'Segoe UI', Tahoma, sans-serif; text-align: center; margin: 0; padding: 20px; }
-        h1 { color: #FFD700; text-transform: uppercase; margin-bottom: 15px; }
-        
-        /* GAME BOARD */
-        #game-view { display: block; }
-        #game-board { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; max-width: 1100px; margin: 20px auto; }
-        .cat-header { background: #002366; border: 2px solid #fff; padding: 15px; font-weight: bold; border-radius: 5px; }
-        .tile { background: #002366; border: 2px solid #fff; color: #FFD700; font-size: 2.2rem; padding: 30px 0; cursor: pointer; border-radius: 5px; font-weight: bold; transition: 0.2s; }
-        .tile:hover { background: #003399; }
-        .tile.used { background: #222; color: #444; border-color: #333; cursor: default; }
+        /* CORE THEME */
+        body { background-color: #000; color: #fff; font-family: 'Segoe UI', Tahoma, sans-serif; text-align: center; margin: 0; padding: 10px; }
+        h1 { color: #FFD700; margin: 10px 0; text-transform: uppercase; }
 
         /* SCOREBOARD */
-        #scoreboard { display: flex; justify-content: center; gap: 15px; margin-bottom: 20px; }
-        .team-box { background: #111; border: 2px solid #002366; padding: 10px; min-width: 130px; border-radius: 8px; }
-        .team-score { font-size: 1.8rem; color: #fff; }
+        #scoreboard { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; }
+        .team-box { background: #111; border: 2px solid #002366; padding: 10px; min-width: 120px; border-radius: 8px; }
+        .team-score { font-size: 1.8rem; color: #fff; font-weight: bold; }
+
+        /* GAME BOARD - FIX: Explicit 5-column grid */
+        #game-view { display: block; }
+        #game-board { 
+            display: grid; 
+            grid-template-columns: repeat(5, 1fr); 
+            grid-auto-flow: column; /* Force items to fill by category column first */
+            gap: 10px; 
+            max-width: 1150px; 
+            margin: 0 auto; 
+        }
+
+        .cat-header { background: #002366; border: 2px solid #fff; padding: 12px; font-weight: bold; font-size: 0.9rem; text-transform: uppercase; border-radius: 4px; display: flex; align-items: center; justify-content: center; min-height: 40px; }
+        .tile { background: #002366; border: 2px solid #fff; color: #FFD700; font-size: 2.2rem; padding: 30px 0; cursor: pointer; border-radius: 4px; font-weight: bold; transition: 0.2s; }
+        .tile:hover { background: #003399; transform: scale(1.02); }
+        .tile.used { background: #222; color: #333; border-color: #444; cursor: default; transform: none; }
 
         /* MODAL & SCORING */
         #modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.98); flex-direction: column; justify-content: center; align-items: center; z-index: 100; }
-        #modal-content { font-size: 2.5rem; margin-bottom: 30px; padding: 0 50px; }
-        #multi-scoring { display: none; width: 100%; max-width: 500px; background: #111; padding: 20px; border-radius: 10px; border: 1px solid #444; }
-        .score-row { display: flex; align-items: center; justify-content: space-between; background: #222; padding: 10px; margin-bottom: 8px; border-radius: 5px; }
-        .score-btn { width: 45px; height: 45px; font-size: 1.5rem; border: none; cursor: pointer; border-radius: 5px; color: #fff; }
+        #modal-content { font-size: 2.5rem; margin-bottom: 30px; padding: 0 40px; max-width: 850px; line-height: 1.2; }
+        #multi-scoring { display: none; width: 100%; max-width: 550px; background: #111; padding: 20px; border-radius: 10px; border: 1px solid #444; }
+        .score-row { display: flex; align-items: center; justify-content: space-between; background: #222; padding: 10px; margin-bottom: 8px; border-radius: 5px; font-size: 1.2rem; }
+        .score-btn { width: 45px; height: 45px; font-size: 1.5rem; border: none; cursor: pointer; border-radius: 5px; color: #fff; font-weight: bold; }
         .plus { background: #28a745; } .minus { background: #dc3545; }
-        .active { outline: 4px solid #fff; transform: scale(1.1); }
-        .btn-gold { background: #FFD700; color: #000; padding: 15px 40px; font-size: 1.2rem; cursor: pointer; border-radius: 5px; font-weight: bold; border: none; }
+        .active { outline: 4px solid #fff; box-shadow: 0 0 10px #fff; }
 
-        /* TEACHER DASHBOARD VIEW */
-        #teacher-view { display: none; background: white; color: black; text-align: left; padding: 40px; max-width: 800px; margin: 20px auto; border-radius: 10px; }
-        .print-cat { font-size: 1.5rem; font-weight: bold; margin-top: 25px; border-bottom: 2px solid #000; }
-        .print-item { margin: 10px 0; padding: 5px; border-bottom: 1px solid #ccc; }
+        .btn-gold { background: #FFD700; color: #000; padding: 15px 40px; font-size: 1.3rem; cursor: pointer; border-radius: 5px; font-weight: bold; border: none; }
 
-        .nav-btns { margin-top: 30px; display: flex; gap: 15px; justify-content: center; }
-        .btn-nav { background: #333; color: white; padding: 10px 20px; border: 1px solid #FFD700; cursor: pointer; border-radius: 5px; }
+        /* TEACHER DASHBOARD */
+        #teacher-view { display: none; background: white; color: black; text-align: left; padding: 30px; max-width: 800px; margin: 20px auto; border-radius: 8px; box-shadow: 0 0 20px rgba(255,255,255,0.2); }
+        .print-cat { font-size: 1.4rem; font-weight: bold; margin-top: 20px; color: #002366; border-bottom: 2px solid #002366; }
+        .print-item { margin: 8px 0; padding: 4px; border-bottom: 1px solid #eee; }
 
-        /* PRINT SETTINGS */
+        .nav-btns { margin-top: 20px; display: flex; gap: 15px; justify-content: center; }
+        .btn-nav { background: #222; color: #FFD700; padding: 12px 24px; border: 2px solid #FFD700; cursor: pointer; border-radius: 6px; font-weight: bold; }
+
         @media print {
             .nav-btns, #scoreboard, h1 { display: none !important; }
-            #teacher-view { display: block !important; border: none; width: 100%; margin: 0; padding: 0; }
-            body { background: white; }
+            #teacher-view { display: block !important; border: none; width: 100%; margin: 0; padding: 0; box-shadow: none; }
+            body { background: white; color: black; }
         }
     </style>
 </head>
@@ -60,20 +68,19 @@
         <div id="game-board"></div>
     </div>
 
-    <!-- Teacher Dashboard Section -->
     <div id="teacher-view"></div>
 
     <div class="nav-btns">
-        <button class="btn-nav" id="toggle-key-btn" onclick="toggleTeacherView()">Show Teacher Answer Key</button>
+        <button class="btn-nav" id="toggle-btn" onclick="toggleDashboard()">Show Teacher Answer Key</button>
         <button class="btn-nav" onclick="resetGame()">Reset & Shuffle Board</button>
     </div>
 
     <div id="modal">
         <div id="modal-content"></div>
-        <button id="rev-btn" class="btn-gold" onclick="reveal()">Show Answer</button>
+        <button id="rev-btn" class="btn-gold" onclick="revealAnswer()">Show Answer</button>
         <div id="multi-scoring">
             <div id="toggles"></div>
-            <button class="btn-gold" style="width:100%; margin-top:15px;" onclick="submit()">Submit & Close</button>
+            <button class="btn-gold" style="width:100%; margin-top:15px;" onclick="submitScores()">Apply Scores & Close</button>
         </div>
     </div>
 
@@ -87,68 +94,95 @@
             { q: "Root meaning: two.", a: "Bi-", c: 4 }, { q: "Root meaning: three.", a: "Tri-", c: 4 }, { q: "Root meaning: many.", a: "Poly-", c: 4 }, { q: "Root meaning: half.", a: "Semi-", c: 4 }, { q: "Root meaning: all.", a: "Omni-", c: 4 }
         ];
 
-        let scores =, curV = 0, curA = "", activeBoard = [], mods =;
+        let scores =, curV = 0, curAns = "", activeBoard = [], mods =;
 
         function init() {
-            const b = document.getElementById('game-board'); b.innerHTML = ""; activeBoard = [];
-            categories.forEach((cat, i) => {
-                let h = document.createElement('div'); h.className = "cat-header"; h.innerText = cat; b.appendChild(h);
-                activeBoard.push([...bank.filter(x => x.c === i)].sort(() => Math.random() - 0.5));
+            const board = document.getElementById('game-board');
+            board.innerHTML = "";
+            activeBoard = [];
+
+            // Build each column (Category Header + 5 Tiles)
+            categories.forEach((catName, colIdx) => {
+                // Header
+                const h = document.createElement('div');
+                h.className = "cat-header";
+                h.innerText = catName;
+                board.appendChild(h);
+
+                // Shuffle category questions
+                let shuffledCat = [...bank.filter(x => x.c === colIdx)].sort(() => Math.random() - 0.5);
+                activeBoard.push(shuffledCat);
+
+                // Add 5 Value Tiles for this column
+                shuffledCat.forEach((item, rowIdx) => {
+                    const val = (rowIdx + 1) * 100;
+                    const tile = document.createElement('div');
+                    tile.className = "tile";
+                    tile.innerText = `$${val}`;
+                    tile.onclick = () => {
+                        if (!tile.classList.contains('used')) {
+                            tile.classList.add('used');
+                            openQuestion(item.q, item.a, val);
+                        }
+                    };
+                    board.appendChild(tile);
+                });
             });
-            for (let r = 0; r < 5; r++) {
-                for (let c = 0; c < 5; c++) {
-                    let v = (r + 1) * 100, item = activeBoard[c][r], t = document.createElement('div');
-                    t.className = "tile"; t.innerText = `$${v}`;
-                    t.onclick = () => { if(!t.classList.contains('used')) { t.classList.add('used'); open(item.q, item.a, v); } };
-                    b.appendChild(t);
-                }
-            }
-            updateTeacherKey();
+            updateTeacherDashboard();
         }
 
-        function open(q, a, v) {
-            curV = v; curA = a; mods =;
+        function openQuestion(q, a, v) {
+            curV = v; curAns = a; mods =;
             document.getElementById('modal-content').innerText = q;
             document.getElementById('rev-btn').style.display = "block";
             document.getElementById('multi-scoring').style.display = "none";
             document.getElementById('modal').style.display = "flex";
         }
 
-        function reveal() {
-            document.getElementById('modal-content').innerHTML = `<span style="color:#FFD700">ANSWER:</span><br>${curA}`;
+        function revealAnswer() {
+            document.getElementById('modal-content').innerHTML = `<span style="color:#FFD700">ANSWER:</span><br>${curAns}`;
             document.getElementById('rev-btn').style.display = "none";
             document.getElementById('multi-scoring').style.display = "block";
             let h = "";
-            for(let i=0; i<4; i++) h += `<div class="score-row">Team ${i+1} <div><button id="m${i}" class="score-btn minus" onclick="tag(${i},-1)">-</button><button id="p${i}" class="score-btn plus" onclick="tag(${i},1)">+</button></div></div>`;
+            for(let i=0; i<4; i++) {
+                h += `<div class="score-row">Team ${i+1} <div>
+                        <button id="m${i}" class="score-btn minus" onclick="toggleMod(${i},-1)">-</button>
+                        <button id="p${i}" class="score-btn plus" onclick="toggleMod(${i},1)">+</button>
+                      </div></div>`;
+            }
             document.getElementById('toggles').innerHTML = h;
         }
 
-        function tag(t, m) {
-            mods[t] = (mods[t] === m) ? 0 : m;
-            document.getElementById(`p${t}`).classList.toggle('active', mods[t] === 1);
-            document.getElementById(`m${t}`).classList.toggle('active', mods[t] === -1);
+        function toggleMod(team, dir) {
+            const p = document.getElementById(`p${team}`), m = document.getElementById(`m${team}`);
+            if (mods[team] === dir) {
+                mods[team] = 0; p.classList.remove('active'); m.classList.remove('active');
+            } else {
+                mods[team] = dir;
+                p.classList.toggle('active', dir === 1);
+                m.classList.toggle('active', dir === -1);
+            }
         }
 
-        function submit() {
+        function submitScores() {
             mods.forEach((m, i) => { scores[i] += (curV * m); document.getElementById(`s${i}`).innerText = scores[i]; });
             document.getElementById('modal').style.display = "none";
         }
 
-        function toggleTeacherView() {
-            const g = document.getElementById('game-view'), t = document.getElementById('teacher-view'), btn = document.getElementById('toggle-key-btn');
-            if (t.style.display === "block") {
-                t.style.display = "none"; g.style.display = "block"; btn.innerText = "Show Teacher Answer Key";
-            } else {
-                t.style.display = "block"; g.style.display = "none"; btn.innerText = "Back to Game Board";
-            }
+        function toggleDashboard() {
+            const game = document.getElementById('game-view'), teach = document.getElementById('teacher-view'), btn = document.getElementById('toggle-btn');
+            const isDashboard = teach.style.display === "block";
+            teach.style.display = isDashboard ? "none" : "block";
+            game.style.display = isDashboard ? "block" : "none";
+            btn.innerText = isDashboard ? "Show Teacher Answer Key" : "Back to Game Board";
         }
 
-        function updateTeacherKey() {
-            let h = "<h1>Teacher Answer Key (Printable)</h1><p>This key matches the current board shuffle.</p>";
+        function updateTeacherDashboard() {
+            let h = "<h1>Teacher Answer Key</h1><p>Print this page for reference. It syncs with your current shuffle.</p>";
             categories.forEach((cat, i) => {
                 h += `<div class="print-cat">${cat}</div>`;
                 activeBoard[i].forEach((item, r) => {
-                    h += `<div class="print-item"><strong>$${(r+1)*100}:</strong> ${item.q} <br><em>Ans: ${item.a}</em></div>`;
+                    h += `<div class="print-item"><strong>$${(r+1)*100}:</strong> ${item.q} <br><em>Answer: ${item.a}</em></div>`;
                 });
             });
             document.getElementById('teacher-view').innerHTML = h;
