@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Greek and Latin Root Jeopardy 2026</title>
+    <style>
+        body { background-color: #000; color: #fff; font-family: sans-serif; text-align: center; margin: 0; padding: 20px; }
+        
+        /* Main Grid */
+        #game-board { 
+            display: grid; 
+            grid-template-columns: repeat(5, 1fr); 
+            gap: 15px; 
+            max-width: 1100px; 
+            margin: 20px auto; 
+        }
+
+        .cat-header { 
+            background: #002366; border: 2px solid #fff; padding: 15px; font-weight: bold; 
+            text-transform: uppercase; border-radius: 5px; min-height: 40px; display: flex; align-items: center; justify-content: center;
+        }
+
+        .tile { 
+            background: #002366; border: 2px solid #fff; color: #FFD700; font-size: 2rem; 
+            padding: 30px 0; cursor: pointer; border-radius: 5px; font-weight: bold;
+        }
+
+        .tile.used { background: #222; color: #444; border-color: #333; cursor: default; }
+
+        /* Scoreboard */
+        #scoreboard { display: flex; justify-content: center; gap: 15px; margin-bottom: 20px; }
+        .team-box { background: #111; border: 2px solid #002366; padding: 10px; min-width: 120px; border-radius: 8px; }
+        .team-score { font-size: 1.5rem; margin-top: 5px; }
+
+        /* Modal Screens */
+        #modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.98); flex-direction: column; justify-content: center; align-items: center; z-index: 100; }
+        #modal-content { font-size: 2.5rem; margin-bottom: 30px; padding: 0 40px; max-width: 800px; }
+        
+        .score-row { display: flex; align-items: center; gap: 10px; background: #222; padding: 10px; border-radius: 5px; margin-bottom: 5px; width: 300px; justify-content: space-between; }
+        .score-btn { width: 40px; height: 40px; font-size: 1.2rem; cursor: pointer; border: none; border-radius: 4px; color: white; }
+        .plus { background: #28a745; }
+        .minus { background: #dc3545; }
+        .active { outline: 3px solid #fff; }
+
+        .btn-reveal { background: #FFD700; color: #000; padding: 15px 40px; font-size: 1.2rem; cursor: pointer; border-radius: 5px; font-weight: bold; border: none; }
+        .bottom-btns { margin-top: 30px; display: flex; gap: 15px; justify-content: center; }
+        .btn-t { background: #333; color: white; padding: 10px 20px; border: 1px solid #FFD700; cursor: pointer; border-radius: 5px; }
+
+        @media print { body * { display: none; } #print-area { display: block; color: black; background: white; text-align: left; } }
+    </style>
+</head>
+<body>
+
+    <h1>Greek and Latin Root Jeopardy</h1>
+
+    <div id="scoreboard">
+        <div class="team-box">Team 1<div class="team-score" id="s0">0</div></div>
+        <div class="team-box">Team 2<div class="team-score" id="s1">0</div></div>
+        <div class="team-box">Team 3<div class="team-score" id="s2">0</div></div>
+        <div class="team-box">Team 4<div class="team-score" id="s3">0</div></div>
+    </div>
+
+    <div id="game-board"></div>
+
+    <div class="bottom-btns">
+        <button class="btn-t" onclick="resetGame()">Reset & Shuffle</button>
+        <button class="btn-t" onclick="window.print()">Print Answer Key</button>
+    </div>
+
+    <div id="modal">
+        <div id="modal-content"></div>
+        <button id="rev-btn" class="btn-reveal" onclick="revealAnswer()">Show Answer</button>
+        <div id="score-module" style="display:none;">
+            <div id="team-toggles"></div>
+            <button class="btn-reveal" style="margin-top:20px; width:100%;" onclick="submitScores()">Submit & Close</button>
+        </div>
+    </div>
+
+    <div id="print-area" style="display:none;"></div>
+
+    <script>
+        const cats = ["Latin Roots", "Greek Roots", "Prefixes", "Suffixes", "Numbers"];
+        const bank = [
+            { q: "Root meaning: to believe.", a: "Cred", c: 0 }, { q: "Root meaning: to break.", a: "Rupt", c: 0 }, { q: "Root meaning: to lead.", a: "Duc", c: 0 }, { q: "Root meaning: to throw.", a: "Ject", c: 0 }, { q: "Root meaning: to build.", a: "Struct", c: 0 },
+            { q: "Root meaning: star.", a: "Astr", c: 1 }, { q: "Root meaning: heat.", a: "Therm", c: 1 }, { q: "Root meaning: fear.", a: "Phobia", c: 1 }, { q: "Root meaning: heart.", a: "Cardi", c: 1 }, { q: "Root meaning: air.", a: "Aer", c: 1 },
+            { q: "Prefix meaning: under.", a: "Sub-", c: 2 }, { q: "Prefix meaning: between.", a: "Inter-", c: 2 }, { q: "Prefix meaning: across.", a: "Trans-", c: 2 }, { q: "Prefix meaning: before.", a: "Pre-", c: 2 }, { q: "Prefix meaning: against.", a: "Anti-", c: 2 },
+            { q: "Suffix meaning: without.", a: "-less", c: 3 }, { q: "Suffix meaning: state of.", a: "-ness", c: 3 }, { q: "Suffix meaning: able to be.", a: "-able", c: 3 }, { q: "Suffix meaning: one who practices.", a: "-ist", c: 3 }, { q: "Suffix meaning: full of.", a: "-ous", c: 3 },
+            { q: "Root meaning: two.", a: "Bi-", c: 4 }, { q: "Root meaning: three.", a: "Tri-", c: 4 }, { q: "Root meaning: many.", a: "Poly-", c: 4 }, { q: "Root meaning: half.", a: "Semi-", c: 4 }, { q: "Root meaning: all.", a: "Omni-", c: 4 }
+        ];
+
+        let scores = [0,0,0,0], curV = 0, activeBoard = [], curAns = "", mods = [0,0,0,0];
+
+        function init() {
+            const b = document.getElementById('game-board'); b.innerHTML = ""; activeBoard = [];
+            cats.forEach((c, i) => {
+                let div = document.createElement('div'); div.className = "cat-header"; div.innerText = c; b.appendChild(div);
+                activeBoard.push([...bank.filter(x => x.c === i)].sort(() => Math.random() - 0.5));
+            });
+            for (let r = 0; r < 5; r++) {
+                for (let c = 0; c < 5; c++) {
+                    let v = (r + 1) * 100, item = activeBoard[c][r], t = document.createElement('div');
+                    t.className = "tile"; t.innerText = `$${v}`;
+                    t.onclick = () => { if(!t.classList.contains('used')) { t.classList.add('used'); open(item.q, item.a, v); } };
+                    b.appendChild(t);
+                }
+            }
+            updatePrint();
+        }
+
+        function open(q, a, v) {
+            curV = v; curAns = a; mods = [0,0,0,0];
+            document.getElementById('modal-content').innerText = q;
+            document.getElementById('rev-btn').style.display = "block";
+            document.getElementById('score-module').style.display = "none";
+            document.getElementById('modal').style.display = "flex";
+        }
+
+        function revealAnswer() {
+            document.getElementById('modal-content').innerHTML = `<span style="color:#FFD700">ANSWER:</span><br>${curAns}`;
+            document.getElementById('rev-btn').style.display = "none";
+            document.getElementById('score-module').style.display = "block";
+            let h = "";
+            for(let i=0; i<4; i++) h += `<div class="score-row">Team ${i+1} <div style="display:flex;gap:5px;"><button id="m${i}" class="score-btn minus" onclick="tag(${i},-1)">-</button><button id="p${i}" class="score-btn plus" onclick="tag(${i},1)">+</button></div></div>`;
+            document.getElementById('team-toggles').innerHTML = h;
+        }
+
+        function tag(t, m) {
+            mods[t] = (mods[t] === m) ? 0 : m;
+            document.getElementById(`p${t}`).classList.toggle('active', mods[t] === 1);
+            document.getElementById(`m${t}`).classList.toggle('active', mods[t] === -1);
+        }
+
+        function submitScores() {
+            mods.forEach((m, i) => { scores[i] += (curV * m); document.getElementById(`s${i}`).innerText = scores[i]; });
+            document.getElementById('modal').style.display = "none";
+        }
+
+        function updatePrint() {
+            let h = "<h1>Jeopardy Answer Key</h1>";
+            cats.forEach((c, i) => {
+                h += `<h3>${c}</h3>`;
+                activeBoard[i].forEach((x, r) => h += `<p>$${(r+1)*100}: ${x.q} (Ans: ${x.a})</p>`);
+            });
+            document.getElementById('print-area').innerHTML = h;
+        }
+
+        function resetGame() { scores = [0,0,0,0]; [0,1,2,3].forEach(i => document.getElementById(`s${i}`).innerText = "0"); init(); }
+
+        init();
+    </script>
+</body>
+</html>
