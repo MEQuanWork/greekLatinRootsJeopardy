@@ -46,25 +46,40 @@
         .bottom-btns { margin-top: 30px; display: flex; gap: 15px; justify-content: center; }
         .btn-t { background: #333; color: white; padding: 10px 20px; border: 1px solid #FFD700; cursor: pointer; border-radius: 5px; }
 
-        @media print { body * { display: none; } #print-area { display: block; color: black; background: white; text-align: left; } }
+        /* Teacher Answer Key Page */
+        #teacher-key-view { display: none; background: white; color: black; text-align: left; padding: 40px; max-width: 800px; margin: 0 auto; border-radius: 10px; }
+        .key-cat { font-size: 1.5rem; font-weight: bold; margin-top: 20px; border-bottom: 2px solid #002366; color: #002366; }
+        .key-item { margin: 10px 0; padding-bottom: 5px; border-bottom: 1px solid #ddd; }
+
+        @media print { 
+            body { background: white !important; }
+            #game-wrapper, .bottom-btns, h1, #scoreboard { display: none !important; } 
+            #teacher-key-view { display: block !important; width: 100%; margin: 0; padding: 0; } 
+        }
     </style>
 </head>
 <body>
 
-    <h1>Greek and Latin Root Jeopardy</h1>
+    <div id="game-wrapper">
+        <h1>Greek and Latin Root Jeopardy</h1>
 
-    <div id="scoreboard">
-        <div class="team-box">Team 1<div class="team-score" id="s0">0</div></div>
-        <div class="team-box">Team 2<div class="team-score" id="s1">0</div></div>
-        <div class="team-box">Team 3<div class="team-score" id="s2">0</div></div>
-        <div class="team-box">Team 4<div class="team-score" id="s3">0</div></div>
+        <div id="scoreboard">
+            <div class="team-box">Team 1<div class="team-score" id="s0">0</div></div>
+            <div class="team-box">Team 2<div class="team-score" id="s1">0</div></div>
+            <div class="team-box">Team 3<div class="team-score" id="s2">0</div></div>
+            <div class="team-box">Team 4<div class="team-score" id="s3">0</div></div>
+        </div>
+
+        <div id="game-board"></div>
     </div>
 
-    <div id="game-board"></div>
+    <!-- The Teacher Answer Key Dashboard -->
+    <div id="teacher-key-view"></div>
 
     <div class="bottom-btns">
         <button class="btn-t" onclick="resetGame()">Reset & Shuffle</button>
-        <button class="btn-t" onclick="window.print()">Print Answer Key</button>
+        <button class="btn-t" id="toggle-key-btn" onclick="toggleTeacherKey()">Show Teacher Key</button>
+        <button class="btn-t" onclick="window.print()">Print Key (PDF)</button>
     </div>
 
     <div id="modal">
@@ -75,8 +90,6 @@
             <button class="btn-reveal" style="margin-top:20px; width:100%;" onclick="submitScores()">Submit & Close</button>
         </div>
     </div>
-
-    <div id="print-area" style="display:none;"></div>
 
     <script>
         const cats = ["Latin Roots", "Greek Roots", "Prefixes", "Suffixes", "Numbers"];
@@ -104,7 +117,7 @@
                     b.appendChild(t);
                 }
             }
-            updatePrint();
+            updateTeacherKeyDisplay();
         }
 
         function open(q, a, v) {
@@ -116,7 +129,7 @@
         }
 
         function revealAnswer() {
-            document.getElementById('modal-content').innerHTML = `<span style="color:#FFD700">ANSWER:</span><br>${curAns}`;
+            document.getElementById('modal-content').innerHTML = `<span style="color:#002366; background:#FFD700; padding: 2px 10px; border-radius: 5px;">ANSWER:</span><br>${curAns}`;
             document.getElementById('rev-btn').style.display = "none";
             document.getElementById('score-module').style.display = "block";
             let h = "";
@@ -135,16 +148,37 @@
             document.getElementById('modal').style.display = "none";
         }
 
-        function updatePrint() {
-            let h = "<h1>Jeopardy Answer Key</h1>";
-            cats.forEach((c, i) => {
-                h += `<h3>${c}</h3>`;
-                activeBoard[i].forEach((x, r) => h += `<p>$${(r+1)*100}: ${x.q} (Ans: ${x.a})</p>`);
-            });
-            document.getElementById('print-area').innerHTML = h;
+        function toggleTeacherKey() {
+            const game = document.getElementById('game-wrapper');
+            const key = document.getElementById('teacher-key-view');
+            const btn = document.getElementById('toggle-key-btn');
+            if (key.style.display === "block") {
+                key.style.display = "none";
+                game.style.display = "block";
+                btn.innerText = "Show Teacher Key";
+            } else {
+                key.style.display = "block";
+                game.style.display = "none";
+                btn.innerText = "Hide Teacher Key";
+            }
         }
 
-        function resetGame() { scores = [0,0,0,0]; [0,1,2,3].forEach(i => document.getElementById(`s${i}`).innerText = "0"); init(); }
+        function updateTeacherKeyDisplay() {
+            let h = "<h1>Teacher Answer Key (Printable)</h1>";
+            cats.forEach((c, i) => {
+                h += `<div class="key-cat">${c}</div>`;
+                activeBoard[i].forEach((x, r) => {
+                    h += `<div class="key-item"><strong>$${(r+1)*100}:</strong> ${x.q} <br><em>Ans: ${x.a}</em></div>`;
+                });
+            });
+            document.getElementById('teacher-key-view').innerHTML = h;
+        }
+
+        function resetGame() { 
+            scores = [0,0,0,0]; 
+            [0,1,2,3].forEach(i => document.getElementById(`s${i}`).innerText = "0"); 
+            init(); 
+        }
 
         init();
     </script>
